@@ -2,6 +2,17 @@ import math
 import json
 
 def predicate(name, first, second):
+    """ Determine whether a condition is satisfied.
+
+    Args:
+        first: string or number
+        second: string or number
+        name: predicate name 
+    Returns:
+        A boolean. Examples:
+        predicate(">=", 3, 3) # True
+        predicate("==", 'hello', 'world') # False
+    """
     if name=='==':
         return first==second
     elif name=='>=':
@@ -11,6 +22,13 @@ def predicate(name, first, second):
         return
 
 def count_attr(data, attr):
+    """ Count occurances of an attribute.
+
+    Args: 
+    Returns:
+        A dict.
+
+    """
     counter = {}
     for d in data:
         counter[d[attr]] = counter.get(d[attr], 0) + 1 
@@ -23,6 +41,15 @@ def most_frequent_category(data, category_attr):
     return sorted_counter[0][0]
 
 def split(data, attr, predicateName, pivot):
+    """Split data into matched and unmatched subgroup.
+
+    Args:
+    Returns:
+        A dict. Example usage:
+        >>> data = [{'color':red, 'size':3}, {'color':green, 'size':10}]
+        >>> split(data, 'color', '==', 'red') 
+        {'matched': {'color':red, 'size':3}, 'unmatched': {'color':green, 'size':10}}
+    """
     matched = []
     unmatched = []
 
@@ -34,6 +61,8 @@ def split(data, attr, predicateName, pivot):
     return {"matched": matched, "unmatched": unmatched}
 
 def entropy(data, category_attr):
+    """ Get entropy of data based on category attribute.
+    """
     counter = count_attr(data, category_attr)
     N = len(data)
     ent = 0
@@ -45,7 +74,7 @@ def entropy(data, category_attr):
 
 def build_decision_tree(data, category_attr):
     if (len(data)<min_leaf_size): 
-        return({"category": most_frequent_category(data, category_attr)})
+        return({"label": most_frequent_category(data, category_attr)})
     
     best_split = {
         "best_gain": 0,
@@ -85,7 +114,7 @@ def build_decision_tree(data, category_attr):
                 best_split['unmatched'] = new_split['unmatched']
 
     if(best_split['best_gain'] == 0):
-         return {'category': most_frequent_category(data, category_attr)}
+         return {'label': most_frequent_category(data, category_attr)}
 
     matched = best_split['matched']
     matched_tree = build_decision_tree(matched, category_attr) 
@@ -102,19 +131,20 @@ def build_decision_tree(data, category_attr):
     }
     
 
-# mock data
-data = [
-    {'length': 10, 'keyword': 'post', 'last_height': 3, 'name': 'api'},
-    {'length': 10, 'keyword': 'post', 'last_height': 3, 'name': 'api'},
-    {'length': 10, 'keyword': 'post', 'last_height': 5, 'name': 'params'},
-    {'length': 20, 'keyword': 'post', 'last_height': 5, 'name': 'params'},
-    {'length': 30, 'keyword': 'post', 'last_height': 5, 'name': 'params'},
-    {'length': 10, 'keyword': '200', 'last_height': 5, 'name': 'response'},
-    {'length': 30, 'keyword': '300', 'last_height': 5, 'name': 'response'},
-    {'length': 40, 'keyword': '404', 'last_height': 5, 'name': 'response'},
-]
+if __name__ == "__main__":
+    # mock data
+    data = [
+        {'length': 10, 'keyword': 'post', 'last_height': 3, 'label': 'api'},
+        {'length': 10, 'keyword': 'post', 'last_height': 3, 'label': 'api'},
+        {'length': 10, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
+        {'length': 20, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
+        {'length': 30, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
+        {'length': 10, 'keyword': '200', 'last_height': 5, 'label': 'response'},
+        {'length': 30, 'keyword': '300', 'last_height': 5, 'label': 'response'},
+        {'length': 40, 'keyword': '404', 'last_height': 5, 'label': 'response'},
+    ]
 
-min_leaf_size = 2
+    min_leaf_size = 2
 
-model = build_decision_tree(data, 'name')
-print(json.dumps(model))
+    model = build_decision_tree(data, 'label')
+    print(json.dumps(model))
