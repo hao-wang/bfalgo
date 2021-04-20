@@ -70,11 +70,14 @@ def load_data_wrapper():
     test_data = zip(test_inputs, te_d[1])
     return (training_data, validation_data, test_data)
 
-def vectorized_result(j):
+def vectorized_result(j, row_vec=False):
     """Return a 10-dimensional unit vector with a 1.0 in the jth
     position and zeroes elsewhere.  This is used to convert a digit
     (0...9) into a corresponding desired output from the neural
     network."""
-    e = np.zeros((10, 1))
+    if row_vec:
+        e = np.zeros(10)
+    else:
+        e = np.zeros((10, 1))
     e[j] = 1.0
     return e
