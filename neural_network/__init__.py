@@ -1,3 +1,6 @@
+"""Adapted from 
+Nielsen - 2006 - Neural Networks and Deep Learning
+"""
 import numpy as np
 
 def nl_func(z, kind='sigmoid'):
@@ -20,9 +23,17 @@ class Network:
     def forward(self, a):
         for l in range(len(self.sizes)-1):
             a = nl_func(np.dot(a, self.weights[l]) + self.biases[l],
-            kind=self.nl_kind)
+                kind=self.nl_kind)
 
         return a
+
+    def backprop(self):
+        """ Get derivatives for each layer's W and b.
+        """
+        nabla_b = []
+        nabla_w = []
+        for l in range(1, len(sizes)):
+            pass
 
     def loss(self, X, y):
         y_calc = forward(self, X)
