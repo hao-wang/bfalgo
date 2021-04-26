@@ -4,7 +4,7 @@ Nielsen - 2006 - Neural Networks and Deep Learning
 import numpy as np
 import sys
 sys.path.append('../utils')
-from mnist_loader import load_data_wrapper
+from mnist_loader import load_data, vectorized_result
 
 def nl_func(z, kind='sigmoid'):
     if kind=='sigmoid':
@@ -48,7 +48,7 @@ class Network:
         layer_outs = self.forward(X)
 
         a_last = layer_outs[-1]
-        delta_l = self.loss_prime(a_last, y) * da_dz(a_last)
+        delta_l = self.loss_prime(a_last, y).T * da_dz(a_last.T)
 
         nabla_b = [delta_l]
         nabla_w = [np.dot(delta_l, layer_outs[-2])]
@@ -91,8 +91,10 @@ class Network:
 
 if __name__ == "__main__":
     network = Network([784, 30, 10], 'sigmoid')
-    training, test, val = load_data_wrapper()
-    X = np.array([tr[0] for tr in training])
-    y = np.array([tr[1] for tr in training])
+    training, test, val = load_data()
+    X = training[0]
+    y_raw = training[1]
+    y = np.array([vectorized_result(iy, True) for iy in y_raw])
+    print(X.shape, y.shape)
 
     network.SGD(X, y)
