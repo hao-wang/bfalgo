@@ -65,8 +65,7 @@ class Network:
             delta_l = np.dot(self.weights[layer], delta_next_layer) * \
                         da_dz(layer_outs[layer]).T
             
-            # Correction for Video: nabla_xx is kind of a misnomer - they 
-            # are the orthogonal of the true nabla's (gradients).
+            # Correction for Video: nabla_xx is the REAL nabla's transposed.
             nabla_b.insert(0, delta_l.T)
             nabla_w.insert(0, np.dot(layer_outs[layer-1].T, delta_l.T))
 
