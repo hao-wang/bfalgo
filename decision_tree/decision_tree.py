@@ -1,6 +1,7 @@
 import math
 import json
 
+
 def predicate(name, first, second):
     """ Determine whether a condition is satisfied.
 
@@ -13,32 +14,35 @@ def predicate(name, first, second):
         predicate(">=", 3, 3) # True
         predicate("==", 'hello', 'world') # False
     """
-    if name=='==':
-        return first==second
-    elif name=='>=':
-        return first>=second
+    if name == '==':
+        return first == second
+    elif name == '>=':
+        return first >= second
     else:
         print("error!")
         return
 
+
 def count_attr(data, attr):
     """ Count occurances of an attribute.
 
-    Args: 
+    Args:
     Returns:
         A dict.
 
     """
     counter = {}
     for d in data:
-        counter[d[attr]] = counter.get(d[attr], 0) + 1 
-    
+        counter[d[attr]] = counter.get(d[attr], 0) + 1
+
     return counter
+
 
 def most_frequent_category(data, category_attr):
     counter = count_attr(data, category_attr)
     sorted_counter = sorted(counter.items(), key=lambda x: x[1], reverse=True)
     return sorted_counter[0][0]
+
 
 def split(data, attr, predicateName, pivot):
     """Split data into matched and unmatched subgroup.
@@ -60,6 +64,7 @@ def split(data, attr, predicateName, pivot):
             unmatched.append(d)
     return {"matched": matched, "unmatched": unmatched}
 
+
 def entropy(data, category_attr):
     """ Get entropy of data based on category attribute.
     """
@@ -72,17 +77,18 @@ def entropy(data, category_attr):
 
     return ent
 
+
 def build_decision_tree(data, category_attr):
-    if (len(data)<min_leaf_size): 
+    if (len(data) < min_leaf_size):
         return({"label": most_frequent_category(data, category_attr)})
-    
+
     best_split = {
         "best_gain": 0,
     }
     for attr in data[0]:
         already_checked = set()
 
-        if(attr==category_attr): 
+        if(attr == category_attr):
             continue
 
         if(isinstance(data[0][attr], str)):
@@ -94,15 +100,18 @@ def build_decision_tree(data, category_attr):
             pivot = d[attr]
             checking_id = attr+predicateName+str(pivot)
             if (checking_id in already_checked):
-                 continue
+                continue
             else:
                 already_checked.add(checking_id)
 
             new_split = split(data, attr, predicateName, pivot)
             current_entropy = entropy(data, category_attr)
             ratio_match = len(new_split['matched'])/len(data)
-            new_entropy = entropy(new_split['matched'], category_attr)*ratio_match + \
-                          entropy(new_split['unmatched'], category_attr)*(1-ratio_match)
+            new_entropy = \
+                entropy(new_split['matched'], category_attr
+                        )*ratio_match + \
+                entropy(new_split['unmatched'], category_attr +
+                        )*(1-ratio_match)
             new_gain = current_entropy - new_entropy
 
             if new_gain > best_split['best_gain']:
@@ -114,10 +123,10 @@ def build_decision_tree(data, category_attr):
                 best_split['unmatched'] = new_split['unmatched']
 
     if(best_split['best_gain'] == 0):
-         return {'label': most_frequent_category(data, category_attr)}
+        return {'label': most_frequent_category(data, category_attr)}
 
     matched = best_split['matched']
-    matched_tree = build_decision_tree(matched, category_attr) 
+    matched_tree = build_decision_tree(matched, category_attr)
 
     unmatched = best_split['unmatched']
     unmatched_tree = build_decision_tree(unmatched, category_attr)
@@ -134,14 +143,14 @@ def build_decision_tree(data, category_attr):
 if __name__ == "__main__":
     # mock data
     data = [
-        {'length': 10, 'keyword': 'post', 'last_height': 3, 'label': 'api'},
-        {'length': 10, 'keyword': 'post', 'last_height': 3, 'label': 'api'},
-        {'length': 10, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
-        {'length': 20, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
-        {'length': 30, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
-        {'length': 10, 'keyword': '200', 'last_height': 5, 'label': 'response'},
-        {'length': 30, 'keyword': '300', 'last_height': 5, 'label': 'response'},
-        {'length': 40, 'keyword': '404', 'last_height': 5, 'label': 'response'},
+       {'length': 10, 'keyword': 'post', 'last_height': 3, 'label': 'api'},
+       {'length': 10, 'keyword': 'post', 'last_height': 3, 'label': 'api'},
+       {'length': 10, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
+       {'length': 20, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
+       {'length': 30, 'keyword': 'post', 'last_height': 5, 'label': 'params'},
+       {'length': 10, 'keyword': '200', 'last_height': 5, 'label': 'response'},
+       {'length': 30, 'keyword': '300', 'last_height': 5, 'label': 'response'},
+       {'length': 40, 'keyword': '404', 'last_height': 5, 'label': 'response'},
     ]
 
     min_leaf_size = 2
