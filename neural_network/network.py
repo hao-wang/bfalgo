@@ -23,7 +23,7 @@ class Network:
     def __init__(self, sizes, nl_kind='sigmoid'):
         self.epochs = 3
         self.batch_size = 50
-        self.eta =1.0 
+        self.eta =5.0 
         self.sizes = sizes
         self.nl_kind = nl_kind
         self.weights = [np.random.randn(sizes[isz], sizes[isz+1])
@@ -98,7 +98,8 @@ class Network:
                 self.biases= [b-nbb for (b, nbb) in zip(self.biases, nabla_b)]
 
                 print("Now the {}th batch.".format(idx))
-                self.evaluate(X, y)
+                if idx%50==0:
+                    self.evaluate(X, y)
             
     def evaluate(self, X, y):
         layer_outs = self.forward(X)    
