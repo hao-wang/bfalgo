@@ -8,7 +8,7 @@ def predicate(name, first, second):
     Args:
         first: string or number
         second: string or number
-        name: predicate name 
+        name: predicate name
     Returns:
         A boolean. Examples:
         predicate(">=", 3, 3) # True
@@ -51,8 +51,11 @@ def split(data, attr, predicateName, pivot):
     Returns:
         A dict. Example usage:
         >>> data = [{'color':red, 'size':3}, {'color':green, 'size':10}]
-        >>> split(data, 'color', '==', 'red') 
-        {'matched': {'color':red, 'size':3}, 'unmatched': {'color':green, 'size':10}}
+        >>> split(data, 'color', '==', 'red')
+        {
+            'matched': {'color':red, 'size':3},
+            'unmatched': {'color':green, 'size':10}
+        }
     """
     matched = []
     unmatched = []
