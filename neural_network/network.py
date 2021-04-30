@@ -26,7 +26,7 @@ class Network:
     def __init__(self, sizes, nl_kind='sigmoid'):
         self.epochs = 3
         self.batch_size = 50
-        self.eta = 1.0
+        self.eta =5.0 
         self.sizes = sizes
         self.nl_kind = nl_kind
         self.weights = [np.random.randn(sizes[isz], sizes[isz+1])
@@ -64,6 +64,9 @@ class Network:
         for layer in range(len(self.sizes)-2, 0, -1):
             delta_l = np.dot(self.weights[layer], delta_next_layer) * \
                         da_dz(layer_outs[layer]).T
+            
+            # Correction for Video: nabla_xx is kind of a misnomer - they 
+            # are the orthogonal of the true nabla's (gradients).
             nabla_b.insert(0, delta_l.T)
             nabla_w.insert(0, np.dot(layer_outs[layer-1].T, delta_l.T))
 
@@ -105,8 +108,9 @@ class Network:
                                zip(self.biases, nabla_b)]
 
                 print("Now the {}th batch.".format(idx))
-                self.evaluate(X, y)
-
+                if idx%50==0:
+                    self.evaluate(X, y)
+            
     def evaluate(self, X, y):
         layer_outs = self.forward(X)
         y_calc = layer_outs[-1]
