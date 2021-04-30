@@ -64,8 +64,8 @@ class Network:
         for layer in range(len(self.sizes)-2, 0, -1):
             delta_l = np.dot(self.weights[layer], delta_next_layer) * \
                         da_dz(layer_outs[layer]).T
-            
-            # Correction for Video: nabla_xx is kind of a misnomer - they 
+
+            # Correction for Video: nabla_xx is kind of a misnomer - they
             # are the orthogonal of the true nabla's (gradients).
             nabla_b.insert(0, delta_l.T)
             nabla_w.insert(0, np.dot(layer_outs[layer-1].T, delta_l.T))
@@ -111,7 +111,7 @@ class Network:
                           f"of epoch {i+1}(/{self.epochs}).")
                     self.evaluate(X, y, 'Training')
                     self.evaluate(test_X, test_y, 'Test')
-            
+
     def evaluate(self, X, y, label):
         layer_outs = self.forward(X)
         y_calc = layer_outs[-1]
@@ -121,7 +121,7 @@ class Network:
 
 
 if __name__ == "__main__":
-    np.random.seed(42)  
+    np.random.seed(42)
 
     network = Network([784, 30, 10], 'sigmoid')
 
