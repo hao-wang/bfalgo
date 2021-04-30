@@ -1,10 +1,10 @@
 """Adapted from Nielsen - 2006 - Neural Networks and Deep Learning, with array
 shape following TensorFlow's convention (None, n_layer_out)
 """
-from mnist_loader import load_data, vectorized_result
-import numpy as np
 import sys
 sys.path.append('../utils')
+from mnist_loader import load_data, vectorized_result
+import numpy as np
 
 
 def nl_func(z, kind='sigmoid'):
@@ -24,15 +24,15 @@ def da_dz(a):
 
 class Network:
     def __init__(self, sizes, nl_kind='sigmoid'):
-        self.epochs = 3
+        self.epochs = 10
         self.batch_size = 50
-        self.eta =5.0 
+        self.eta = 5.0
         self.sizes = sizes
         self.nl_kind = nl_kind
         self.weights = [np.random.randn(sizes[isz], sizes[isz+1])
                         for isz in range(len(sizes)-1)]
         self.biases = [np.random.randn(1, sz) for sz in sizes[1:]]
-        
+
     def forward(self, a):
         """ Forward pass. Record a for each layer. Note that
         Layer-l corresponds to a[l], weights[l-1], and biases[l-1] (l>=1).
@@ -77,12 +77,11 @@ class Network:
     def loss_prime(self, a_L, y):
         return (a_L-y).T
 
-    def SGD(self, X, y):
+    def SGD(self, X, y, test_X, test_y):
         """Train with small batches. Get smoothed(averaged) nabla_w & nabla_b,
         then update weights and biases, by training with mini-batches.
         """
         for i in range(self.epochs):
-            print("Epoch %s/%s" % (i, self.epochs))
             idx_shuffle = np.arange(len(X))
             np.random.shuffle(idx_shuffle)
             batch_size = self.batch_size
@@ -107,24 +106,32 @@ class Network:
                 self.biases = [b-nbb for (b, nbb) in
                                zip(self.biases, nabla_b)]
 
-                print("Now the {}th batch.".format(idx))
-                if idx%50==0:
-                    self.evaluate(X, y)
+                if idx % 50 == 0:
+                    print(f"Now the {idx}(/{len(X)//batch_size})th batch " +
+                          f"of epoch {i+1}(/{self.epochs}).")
+                    self.evaluate(X, y, 'Training')
+                    self.evaluate(test_X, test_y, 'Test')
             
-    def evaluate(self, X, y):
+    def evaluate(self, X, y, label):
         layer_outs = self.forward(X)
         y_calc = layer_outs[-1]
         correct = [np.argmax(y_calc[i]) == np.argmax(y[i])
                    for i in range(len(X))]
-        print("Correct ratio: %.3f " % (sum(correct)/len(X)))
+        print(f"{label} data: accuracy {sum(correct)/len(X):.3f}.")
 
 
 if __name__ == "__main__":
+    np.random.seed(42)  
+
     network = Network([784, 30, 10], 'sigmoid')
+
     training, test, val = load_data()
     X = training[0]
     y_raw = training[1]
     y = np.array([vectorized_result(iy, True) for iy in y_raw])
-    print(X.shape, y.shape)
 
-    network.SGD(X, y)
+    test_X = test[0]
+    test_y_raw = test[1]
+    test_y = np.array([vectorized_result(iy, True) for iy in test_y_raw])
+
+    network.SGD(X, y, test_X, test_y)
