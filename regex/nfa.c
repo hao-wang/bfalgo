@@ -21,9 +21,8 @@
  * Insert . as explicit concatenation operator.
  * Cheesy parser, return static buffer.
  */
-char*
-re2post(char *re)
-{
+char* re2post(char *re) { 
+
 	int nalt, natom;
     // Why static variable, when it's called only once? 
     // buf[] will be returned for use in other parts, so must be 
@@ -111,26 +110,22 @@ re2post(char *re)
  * If c == Split, unlabeled arrows to out and out1 (if != NULL).
  * If c < 256, labeled arrow with character c to out.
  */
-enum
-{
+enum {
 	Match = 256,
 	Split = 257
 };
 typedef struct State State;
-struct State
-{
+struct State {
 	int c;
 	State *out;
 	State *out1;
 	int lastlist;
 };
 State matchstate = { Match };	/* matching state */
-int nstate;
+int nstate; // each state has an id, but it's not used, only as counter
 
 /* Allocate and initialize State */
-State*
-state(int c, State *out, State *out1)
-{
+State* state(int c, State *out, State *out1) {
 	State *s;
 	
 	nstate++;
@@ -150,58 +145,69 @@ state(int c, State *out, State *out1)
  */
 typedef struct Frag Frag;
 typedef union Ptrlist Ptrlist;
-struct Frag
-{
+struct Frag {
 	State *start;
 	Ptrlist *out;
 };
 
 /* Initialize Frag struct. */
-Frag
-frag(State *start, Ptrlist *out)
-{
+Frag frag(State *start, Ptrlist *out) {
 	Frag n = { start, out };
 	return n;
 }
 
-/*
- * Since the out pointers in the list are always 
- * uninitialized, we use the pointers themselves
- * as storage for the Ptrlists.
- */
-union Ptrlist
-{
+union Ptrlist {
+	/*
+	A usual node of a linked list, except that the data and the next-pointing
+	pointer share the same memory segment. 
+	* Since the out pointers in the list are always 
+	* uninitialized, we use the pointers themselves
+	* as storage for the Ptrlists.
+	*/
 	Ptrlist *next;
 	State *s;
 };
 
-/* Create singleton list containing just outp. */
-Ptrlist*
-list1(State **outp)
-{
+Ptrlist* list1(State **outp) {
+	/* 
+	Create singleton list containing just outp. 
+
+	Args:
+		**outp is a pointer to pointer that points to outp, which is a state.
+
+	A ptrlist is an array of states / pointers. 
+	A ptrlist pointer is a pointer pointing to this array.
+	*/
 	Ptrlist *l;
 	
+	//Make outp a pointer to Ptrlist (which is indeed a pointer to state)
+	//(*l).next = Null --> that will erase (*l).s, doesn't that matter? --
+	//No. Each time list1 is called, outp is NULL.
 	l = (Ptrlist*)outp;
 	l->next = NULL;
 	return l;
 }
 
-/* Patch the list of states at out to point to start. */
-void
-patch(Ptrlist *l, State *s)
-{
+void patch(Ptrlist *l, State *s) {
+	/* 
+	* Patch the list of states at out (of an NFA fragment) to point to start. 
+	*/
 	Ptrlist *next;
 	
 	for(; l; l=next){
+		/* 
+		l->next, l->s are two pointers that can overwrite each other.
+		Here we save l->next (can be NULL, or some State)
+		*/
 		next = l->next;
 		l->s = s;
 	}
 }
 
-/* Join the two lists l1 and l2, returning the combination. */
-Ptrlist*
-append(Ptrlist *l1, Ptrlist *l2)
-{
+Ptrlist* append(Ptrlist *l1, Ptrlist *l2) {
+	/* 
+	* Join the two lists l1 and l2, returning the combination. 
+	*/
 	Ptrlist *oldl1;
 	
 	oldl1 = l1;
@@ -211,18 +217,16 @@ append(Ptrlist *l1, Ptrlist *l2)
 	return oldl1;
 }
 
-/*
- * Convert postfix regular expression to NFA.
- * Return start state.
- */
-State*
-post2nfa(char *postfix)
-{
+State* post2nfa(char *postfix) {
+	/*
+	* Convert postfix regular expression to NFA.
+	* Return start state.
+	*/
 	char *p;
 	Frag stack[1000], *stackp, e1, e2, e;
 	State *s;
 	
-	// fprintf(stderr, "postfix: %s\n", postfix);
+	printf("postfix: %s\n", postfix);
 
 	if(postfix == NULL)
 		return NULL;
@@ -235,6 +239,7 @@ post2nfa(char *postfix)
 		switch(*p){
 		default:
 			s = state(*p, NULL, NULL);
+			// precedence [->] > [&], so it's like &(s->out)
 			push(frag(s, list1(&s->out)));
 			break;
 		case '.':	/* catenate */
@@ -292,9 +297,7 @@ void addstate(List*, State*);
 void step(List*, int, List*);
 
 /* Compute initial state list */
-List*
-startlist(State *start, List *l)
-{
+List* startlist(State *start, List *l) {
 	l->n = 0;
 	listid++;
 	addstate(l, start);
@@ -302,9 +305,7 @@ startlist(State *start, List *l)
 }
 
 /* Check whether state list contains a match. */
-int
-ismatch(List *l)
-{
+int ismatch(List *l) {
 	int i;
 
 	for(i=0; i<l->n; i++)
@@ -314,13 +315,11 @@ ismatch(List *l)
 }
 
 /* Add s to l, following unlabeled arrows. */
-void
-addstate(List *l, State *s)
-{
+void addstate(List *l, State *s) {
 	if(s == NULL || s->lastlist == listid)
 		return;
 	s->lastlist = listid;
-	if(s->c == Split){
+	if(s->c == Split) {
 		/* follow unlabeled arrows */
 		addstate(l, s->out);
 		addstate(l, s->out1);
@@ -329,14 +328,12 @@ addstate(List *l, State *s)
 	l->s[l->n++] = s;
 }
 
-/*
- * Step the NFA from the states in clist
- * past the character c,
- * to create next NFA state set nlist.
- */
-void
-step(List *clist, int c, List *nlist)
-{
+void step(List *clist, int c, List *nlist) {
+	/*
+	* Step the NFA from the states in clist
+	* past the character c,
+	* to create next NFA state set nlist.
+	*/
 	int i;
 	State *s;
 
@@ -344,15 +341,16 @@ step(List *clist, int c, List *nlist)
 	nlist->n = 0;
 	for(i=0; i<clist->n; i++){
 		s = clist->s[i];
+		// why is 's->out1' omitted?
+		// because split-state is never added to clist
+		// all are single outs
 		if(s->c == c)
 			addstate(nlist, s->out);
 	}
 }
 
 /* Run NFA to determine whether it matches s. */
-int
-match(State *start, char *s)
-{
+int match(State *start, char *s) {
 	int i, c;
 	List *clist, *nlist, *t;
 
@@ -366,9 +364,7 @@ match(State *start, char *s)
 	return ismatch(clist);
 }
 
-int
-main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	int i;
 	char *post;
 	State *start;
@@ -380,7 +376,7 @@ main(int argc, char **argv)
 	
 	post = re2post(argv[1]);
     printf("%s\n", post);
-    return 0;
+    //return 0;
 
 	if(post == NULL){
 		fprintf(stderr, "bad regexp %s\n", argv[1]);
@@ -400,27 +396,3 @@ main(int argc, char **argv)
 			printf("%s\n", argv[i]);
 	return 0;
 }
-
-/*
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the
- * Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall
- * be included in all copies or substantial portions of the
- * Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
- * KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS
- * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
- * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
