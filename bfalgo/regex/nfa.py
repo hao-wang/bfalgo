@@ -106,6 +106,7 @@ class State:
             out (State): 
             out1 (State): 
         """
+        global state_id
         self.state_id = state_id
         self.value = value
         self.out = out  # a single state or None
@@ -129,7 +130,7 @@ class Fragment:
     exposing to outside world with a start state and a list of connected
     pointers, pointing to None or some state. 
     """
-    def __init__(self, start: State, out: List[State]):
+    def __init__(self, start: State, out: 'list[State]'):
         self.start = start
         self.out = out
 
@@ -144,7 +145,7 @@ def patch(outlist, state):
     outlist.append(state)
     return outlist
 
-def join_outs(outlist1: List[State], outlist2: List[State]):
+def join_outs(outlist1: 'list[State]', outlist2: 'list[State]'):
     """The last element of outlist1 is always None
 
     Args:
@@ -178,15 +179,15 @@ def postfix_to_nfa(postfix):
         elif rc == '?':
             e1 = nfa_nodes.pop()
             s = State(SPLIT, e1.start, None)
-            nfa_nodes.push(Fragment(s, join_outs(e1.out, list1(s.out1))))
+            nfa_nodes.append(Fragment(s, join_outs(e1.out, list1(s.out1))))
         elif rc == '+':
             e1 = nfa_nodes.pop()
             s = State(SPLIT, e1.start, None)
             patch(e1.out, s)
-            nfa_nodes.push(Fragment(e1.start, list1(s.out1)))
+            nfa_nodes.append(Fragment(e1.start, list1(s.out1)))
         else:
             s = State(rc, None, None)
-            nfa_nodes.push(Fragment(s, list1(s.out)))
+            nfa_nodes.append(Fragment(s, list1(s.out)))
     
     e = nfa_nodes.pop()
     if len(nfa_nodes) != 0:
@@ -194,13 +195,13 @@ def postfix_to_nfa(postfix):
     patch(e.out, State(MATCHED, None, None))
     return e
 
-def ismatch(l: List[State]):
+def ismatch(l: 'list[State]') -> bool:
     for s in l:
         if s.value == MATCHED:
             return 1
     return 0
 
-def addstate(state_list: List[State], state: State):
+def addstate(state_list: 'list[State]', state: State):
     if state.value == SPLIT:
         addstate(state_list, state.out)
         addstate(state_list, state.out1)
@@ -232,7 +233,7 @@ def main(reg, string):
     print("ho")
 
     if match(nfa, string):
-        print(f"{string} matched")
+        print(f"{string} matched RegEx {reg}")
     return 0
 
 if __name__ == "__main__":

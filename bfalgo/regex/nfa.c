@@ -196,6 +196,7 @@ void patch(Ptrlist *l, State *s) {
 	
 	for(; l; l=next){
 		/* 
+		Starting from head of *l (linked list).
 		l->next, l->s are two pointers that can overwrite each other.
 		Here we save l->next (can be NULL, or some State)
 		*/
