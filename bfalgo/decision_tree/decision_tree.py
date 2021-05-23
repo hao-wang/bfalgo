@@ -82,12 +82,24 @@ def entropy(data, category_attr):
 
 
 def build_decision_tree(data, category_attr):
+    """Build a decision tree based on data, with the label column
+    category_attr.
+
+    Args:
+        data (dict[]): list of dicts
+        category_attr (string): label column's name
+
+    Returns:
+        [type]: [description]
+    """
     if (len(data) < min_leaf_size):
         return({"label": most_frequent_category(data, category_attr)})
 
     best_split = {
         "best_gain": 0,
     }
+
+    # Find the best split by checking each attribute value of each data point.
     for attr in data[0]:
         already_checked = set()
 
@@ -101,6 +113,7 @@ def build_decision_tree(data, category_attr):
 
         for d in data:
             pivot = d[attr]
+            # Avoid redundant checkings with a hashset.
             checking_id = attr+predicateName+str(pivot)
             if (checking_id in already_checked):
                 continue
@@ -110,11 +123,11 @@ def build_decision_tree(data, category_attr):
             new_split = split(data, attr, predicateName, pivot)
             current_entropy = entropy(data, category_attr)
             ratio_match = len(new_split['matched'])/len(data)
-            new_entropy = \
+            new_entropy = (
                 entropy(new_split['matched'], category_attr
-                        )*ratio_match + \
-                entropy(new_split['unmatched'], category_attr +
-                        )*(1-ratio_match)
+                        )*ratio_match +
+                entropy(new_split['unmatched'], category_attr
+                        )*(1-ratio_match))
             new_gain = current_entropy - new_entropy
 
             if new_gain > best_split['best_gain']:
@@ -134,6 +147,7 @@ def build_decision_tree(data, category_attr):
     unmatched = best_split['unmatched']
     unmatched_tree = build_decision_tree(unmatched, category_attr)
 
+    # Collect matched & unmatched subtree into the current node.
     return {
         'attribute': best_split['attribute'],
         'predicateName': best_split['predicateName'],
