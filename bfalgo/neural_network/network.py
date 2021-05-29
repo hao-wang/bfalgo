@@ -8,6 +8,15 @@ import numpy as np
 
 
 def nl_func(z, kind='sigmoid'):
+    """Nonlinear transformation.
+
+    Args:
+        z (float): 
+        kind (str, optional): Nonlinear function type. Defaults to 'sigmoid'.
+
+    Returns:
+        float: 
+    """
     if kind == 'sigmoid':
         return 1./(1+np.exp(-z))
     elif kind == 'linear':
@@ -17,7 +26,14 @@ def nl_func(z, kind='sigmoid'):
 
 
 def da_dz(a):
-    """ a(z) is an element-wise mapping; so is the multiplicaton.
+    """ da/dz for sigmoid function. a(z) is an element-wise mapping; 
+    so is the multiplicaton.
+
+    Args:
+        a (float):
+
+    Returns:
+        da/dz (float)
     """
     return a*(1-a)
 
@@ -36,6 +52,12 @@ class Network:
     def forward(self, a):
         """ Forward pass. Record a for each layer. Note that
         Layer-l corresponds to a[l], weights[l-1], and biases[l-1] (l>=1).
+
+        Args:
+            a (np.ndarray): (None, 784)
+
+        Returns:
+            layer_outs (np.ndarray[]): #layer of outputs 
         """
         a = a.reshape(-1, 784)
         layer_outs = [a]
@@ -49,8 +71,16 @@ class Network:
         """ Get derivatives for each layer's weight and bias. Most vector
         differentiation analysis happens here.
 
-        Note that Layer-l corresponds to layer_outs[l],
-        weights[l-1], and biases[l-1] (l>=1).
+        Note that Layer-l corresponds to layer_outs[l], weights[l-1], 
+        and biases[l-1] (l>=1).
+
+        Args:
+            x (np.ndarray): (784, )
+            y (np.ndarray): (10, )
+
+        Returns:
+            nabla_w (np.ndarray[]): weight matrices for each layer
+            nabla_b (np.ndarray[]): biases for each layer
         """
         layer_outs = self.forward(x)
 
@@ -74,15 +104,29 @@ class Network:
         return nabla_w, nabla_b
 
     def loss_prime(self, a_L, y):
+        """First derivative of loss.
+
+        Args:
+            a_L (np.ndarray): output of the last layer 
+            y (np.ndarray): label
+
+        Returns:
+            []: [description]
+        """
         return (a_L-y).T
 
     def SGD(self, X, y, test_X, test_y):
         """Train with small batches. Get smoothed(averaged) nabla_w & nabla_b,
         then update weights and biases, by training with mini-batches.
+
+        Args:
+            X (np.ndarray): (None, 784)
+            y (np.ndarray): (None, 10)
+            test_X (np.ndarray):
+            test_y (np.ndarray):
         """
         for i in range(self.epochs):
-            idx_shuffle = np.arange(len(X))
-            np.random.shuffle(idx_shuffle)
+            idx_shuffle = np.random.shuffle(np.arange(len(X)))
             batch_size = self.batch_size
             idx_batches = [idx_shuffle[i*batch_size:(i+1)*batch_size]
                            for i in range(len(X)//batch_size)]
@@ -112,6 +156,16 @@ class Network:
                     self.evaluate(test_X, test_y, 'Test')
 
     def evaluate(self, X, y, label):
+        """Evaluate model by accuracy.
+
+        Args:
+            X (np.ndarray): dim(size, 784)
+            y (np.ndarray): dim(size, 10)
+            label (string): 
+
+        Returns:
+            None (print to console)
+        """
         layer_outs = self.forward(X)
         y_calc = layer_outs[-1]
         correct = [np.argmax(y_calc[i]) == np.argmax(y[i])
