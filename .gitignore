@@ -1,3 +1,6 @@
+# python egg files
+*.egg-info/
+
 # Vscode files
 .vscode/
 
