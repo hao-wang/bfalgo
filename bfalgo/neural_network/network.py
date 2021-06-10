@@ -61,7 +61,7 @@ class Network:
         a = a.reshape(-1, 784)
         layer_outs = [a]
         for layer in range(1, len(self.sizes)):
-            z = np.dot(a, self.weights[layer - 1]) + self.biases[layer - 1]
+            z = a @ self.weights[layer - 1] + self.biases[layer - 1]
             a = nl_func(z, kind=self.nl_kind)
             layer_outs.append(a)
         return layer_outs
@@ -87,17 +87,15 @@ class Network:
         delta_L = self.loss_prime(a_L, y) * da_dz(a_L).T  # (n_L, 1)
 
         nabla_b = [delta_L.T]  # (1, n_L)
-        nabla_w = [np.dot(layer_outs[-2].T, delta_L.T)]  # (n_L-1, n_L)
+        nabla_w = [layer_outs[-2].T @ delta_L.T]  # (n_L-1, n_L)
 
         delta_next_layer = delta_L
         for layer in range(len(self.sizes) - 2, 0, -1):
-            delta_l = (
-                np.dot(self.weights[layer], delta_next_layer) * da_dz(layer_outs[layer]).T
-            )
+            delta_l = self.weights[layer] @ delta_next_layer * da_dz(layer_outs[layer]).T
 
             # Correction for Video: nabla_xx is the REAL nabla's transposed.
             nabla_b.insert(0, delta_l.T)
-            nabla_w.insert(0, np.dot(layer_outs[layer - 1].T, delta_l.T))
+            nabla_w.insert(0, layer_outs[layer - 1].T @ delta_l.T)
 
             delta_next_layer = delta_l
 
@@ -126,7 +124,8 @@ class Network:
             test_y (np.ndarray):
         """
         for i in range(self.epochs):
-            idx_shuffle = np.random.shuffle(np.arange(len(X)))
+            idx_shuffle = np.arange(len(X))
+            np.random.shuffle(idx_shuffle)
             batch_size = self.batch_size
             idx_batches = [
                 idx_shuffle[i * batch_size : (i + 1) * batch_size]
