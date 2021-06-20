@@ -1,0 +1,10 @@
+*.egg-info/
+# Vscode files
+.vscode/
+
+*.bk
+*.pyc
+*.out
+
+# C test code
+test.c
