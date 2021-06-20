@@ -1,1 +1,0 @@
-Stable prediction based on causal analysis.
