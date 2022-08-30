@@ -1,3 +1,6 @@
+.DS_Store
+*.ipynb
+*~*
 # python egg files
 *.egg-info/
 
