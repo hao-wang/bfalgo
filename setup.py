@@ -15,7 +15,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     packages=find_packages(where="bfalgo", exclude=["dat.*", "dat"]),
-    install_requires=['numpy', 'scikit-learn', 'scipy'],
+    install_requires=['numpy', 'pyrival', 'scikit-learn', 'scipy'],
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
