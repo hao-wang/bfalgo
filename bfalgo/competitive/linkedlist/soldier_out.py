@@ -18,10 +18,11 @@ if __name__ == "__main__":
         for i in range(N):
             ll.append(i)
 
+        k = 2
         while ll.size() > 3:
-            k = 2
             for cnt, node in enumerate(ll):
                 if (cnt + 1) % k == 0:
+                    # print(f"remove idx(k={k}): {cnt+1}")
                     ll.remove(node)
 
             if k == 2:
@@ -33,4 +34,4 @@ if __name__ == "__main__":
         for node in ll:
             remains.append(node.data)
 
-        print(" ".join([str(n) for n in remains]))
+        print(" ".join([str(n + 1) for n in remains]))

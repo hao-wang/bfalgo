@@ -23,6 +23,8 @@ class LinkedList:
 
     def append(self, data: Any):
         node = Node(data)
+        # if new list, set head
+        # else, find the tail and append the new node to it
         if self.head is None:
             self.head = node
         else:
@@ -33,15 +35,18 @@ class LinkedList:
             node.prev = current
 
     def remove(self, node):
-        if node.prev is None:
-            # head
-            next_node = node.next
-            next_node.prev = None
+        # if head (node.prev is None), prev=None
+        # if tail (node.next is None), next=None
+        # else
+        prev_node = node.prev
+        next_node = node.next
+        if prev_node is None:
             self.head = next_node
+        elif next_node is None:
+            prev_node.next = None
         else:
-            next_node = node.next
-            prev_node = node.prev
             next_node.prev = prev_node
+            prev_node.next = next_node
 
         # is it necessary?
         node = None
